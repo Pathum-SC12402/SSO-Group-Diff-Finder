@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>SSO Group Difference Finder</title>
+
+    <script>
+        // --- jsPDF Library (Minimal Placeholder) ---
+        // The library structure is kept but the actual PDF creation logic
+        // is simplified to a text file download for a serverless environment.
+        (function (global, factory) {
+            typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
+            typeof define === 'function' && define.amd ? define(['exports'], factory) :
+            (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.jspdf = {}));
+        })(this, (function (exports) { 'use strict';
+            exports.jsPDF = function(options) {
+                return new (class {
+                    constructor() {
+                        this.content = [];
+                        this.setFontSize = (size) => console.log(`Set font size to ${size}`);
+                        this.text = (text, x, y) => this.content.push(`- ${text}`);
+                        this.save = (filename) => {
+                            const lines = ["Filtered Additional SSO Groups"];
+                            lines.push(...this.content);
+                            const textOutput = lines.join('\n');
+                            const blob = new Blob([textOutput], { type: 'text/plain;charset=utf-8' });
+                            const link = document.createElement('a');
+                            link.href = URL.createObjectURL(blob);
+                            link.download = filename;
+                            document.body.appendChild(link);
+                            link.click();
+                            document.body.removeChild(link);
+                        };
+                    }
+                })();
+            };
+            Object.defineProperty(exports, '__esModule', { value: true });
+        }));
+    </script>
+    <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+    <div class="container">
+        <h2>SSO Group Comparator</h2>
+
+        <label><b>1. Upload sso-groups.json (Source List)</b></label>
+        <input type="file" id="jsonFile" accept="application/json">
+        <button onclick="loadGroups()">Load Source Groups</button>
+
+        <hr>
+
+        <label><b>2. Paste SSO Groups to Compare With (List to Exclude from Source):</b></label>
+        <textarea id="compareInput" placeholder="Enter group names, one per line..." rows="6"></textarea>
+        <button onclick="compareGroups()">Find Additional Groups (Step 2)</button>
+
+        <hr>
+
+        <label><b>3. Upload Groups to Ignore from Filtered List (Optional .txt):</b></label>
+        <input type="file" id="ignoreFile" accept="text/plain">
+        <button onclick="loadIgnoreList()">Load Ignore List</button>
+
+        <button onclick="applyIgnoreFilter()" id="filterBtn" style="display:none;">
+            Apply Ignore Filter (Step 3)
+        </button>
+
+        <hr>
+
+        <div id="searchContainer" style="display:none;">
+            <label><b>4. Search/Filter Current Results:</b></label>
+            <input type="text" id="searchInput" onkeyup="searchFilter()" placeholder="Type to filter the list below...">
+        </div>
+
+        <h3 id="resultTitle" style="display:none;">Results</h3>
+        <ul id="resultList"></ul>
+
+        <button id="downloadBtn" class="download-btn" onclick="downloadResult()" style="display:none;">
+            Download Final List (.txt)
+        </button>
+    </div>
+
+    <!-- link to external JS -->
+    <script src="app.js"></script>
+
+</body>
+</html>
